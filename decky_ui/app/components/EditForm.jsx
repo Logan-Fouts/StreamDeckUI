@@ -8,7 +8,8 @@ const EditForm = ({ button, onSave, onCancel, isOpen }) => {
     label: '',
     type: 0,
     staticImgSrc: '',
-    pressedImgSrc: ''
+    pressedImgSrc: '',
+    command: ''
   });
 
   // Update form when button prop changes
@@ -17,7 +18,8 @@ const EditForm = ({ button, onSave, onCancel, isOpen }) => {
       setFormData({
         id: button.id || '',
         label: button.label || '',
-        type: button.type || 0,
+        command: button.command || '',
+        type: Number(button.type) || 0, // Convert to number
         staticImgSrc: button.staticImgSrc || '',
         pressedImgSrc: button.pressedImgSrc || ''
       });
@@ -26,9 +28,10 @@ const EditForm = ({ button, onSave, onCancel, isOpen }) => {
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
+    
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'number' ? parseInt(value) : value
+      [name]: name === 'type' ? parseInt(value) || 0 : value
     }));
   };
 

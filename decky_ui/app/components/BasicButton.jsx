@@ -2,9 +2,13 @@ import { FaFolder } from 'react-icons/fa';
 
 let backTrack = false;
 
-export default function BasicButton({ button, setSelectedBtn, setCurrBtns, handleFolderClick }) {
+export default function BasicButton({ selectedBtn, button, setSelectedBtn, setCurrBtns, handleFolderClick }) {
 
   const handleClick = () => {
+    if (selectedBtn && selectedBtn.id == button.id) {
+      setSelectedBtn(null);
+      return;
+    }
     setSelectedBtn(button);
   }
 
@@ -16,7 +20,8 @@ export default function BasicButton({ button, setSelectedBtn, setCurrBtns, handl
       setCurrBtns(button.child, false);
       setSelectedBtn(null);
     } else {
-      setSelectedBtn(button);
+      setCurrBtns([], false);
+      setSelectedBtn(null);
     }
   }
   

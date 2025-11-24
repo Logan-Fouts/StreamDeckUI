@@ -1,5 +1,5 @@
 import react, { useState } from "react";
-import loadButtonConfig from "./jsonHelper.js";
+import loadButtonConfig, { getValidID, saveConfig } from "./jsonHelper.js";
 import BasicButton from "./BasicButton.jsx";
 import BackButton from "./BackButton.jsx";
 import EditForm from "./EditForm.jsx";
@@ -30,15 +30,44 @@ export default function StreamDeck({ rows, cols }) {
       prevBtns.push(currBtns);
       setPrevBtns(prevBtns);
     }
-
-    if (newBtns.length < rows * cols) {
-      const tmpBtns = Array(rows*cols).fill().map((_, i) => ({ id: -1, label: '', type: 0 }));
-      for (let i = 0; i < newBtns.length; i++) tmpBtns[i] = newBtns[i];
+    
+    let tooFewBtns = newBtns.length < rows * cols;
+    
+    // No buttons on page
+    if (newBtns.length == 0) {
+      const validID = getValidID();
+      const tmpBtns = Array(rows*cols).fill().map((_, i) => ({ id: i + validID, label: '', type: 0 }));
+      tmpBtns[0].type = BACK;
       setCurrBtns(tmpBtns);
-    } else {
-      setCurrBtns(newBtns);
+      saveConfig(tmpBtns, parents);
+      printStatus();
+      return;
     }
 
+    // Too few buttons and no back button doesnt handle if all buttons already exist
+    if (tooFewBtns && newBtns[0].id != BACK) {
+      const validID = getValidID();
+      const tmpBtns = Array(rows*cols).fill().map((_, i) => ({ id: i + validID, label: '', type: 0 }));
+      tmpBtns[0].type = BACK;
+      for (let i = 1; i < newBtns.length; i++) tmpBtns[i] = newBtns[i];
+      setCurrBtns(tmpBtns);
+      saveConfig(tmpBtns, parents);
+      printStatus();
+      return;
+    }
+
+    // Too few buttons but back button already exists
+    if (tooFewBtns && newBtns[0].id == BACK) {
+      const validID = getValidID();
+      const tmpBtns = Array(rows*cols).fill().map((_, i) => ({ id: i + validID, label: '', type: 0 }));
+      for (let i = 0; i < newBtns.length; i++) tmpBtns[i] = newBtns[i];
+      setCurrBtns(tmpBtns);
+      saveConfig(tmpBtns, parents);
+      printStatus();
+      return;
+    }
+
+    setCurrBtns(newBtns);
     printStatus();
   }
 
@@ -51,8 +80,11 @@ export default function StreamDeck({ rows, cols }) {
     parents.pop();
   }
 
-  const handleSaveButton = () => {
-    // TODO
+  const handleSaveButton = (formData) => {
+    let updatedBtns = currBtns.map(btn => btn.id === formData.id ? { ...btn, ...formData } : btn);
+    setCurrBtns(updatedBtns);
+    setSelectedBtn(null);
+    saveConfig(updatedBtns, parents);
     setFormOpen(false);
   }
 
@@ -85,7 +117,7 @@ export default function StreamDeck({ rows, cols }) {
       <div className={`grid grid-flow-row ${colsClasses[cols]} gap-4 justify-center`}>
         {currBtns.map((button, index) => (
           <div key={index}>
-            { button.type != BACK ? <BasicButton button={button} setSelectedBtn={setSelectedBtn} setCurrBtns={updateButtons} handleFolderClick={handleFolderClick} /> : <BackButton setCurrBtns={updateButtons} prevBtns={prevBtns} setSelectedBtn={setSelectedBtn} setPrevBtns={setPrevBtns} handleBackClick={handleBackClick}/> }
+            { button.type != BACK ? <BasicButton selectedBtn={selectedBtn} button={button} setSelectedBtn={setSelectedBtn} setCurrBtns={updateButtons} handleFolderClick={handleFolderClick} /> : <BackButton setCurrBtns={updateButtons} prevBtns={prevBtns} setSelectedBtn={setSelectedBtn} setPrevBtns={setPrevBtns} handleBackClick={handleBackClick}/> }
           </div>
         ))}
       </div>
@@ -99,10 +131,3 @@ export default function StreamDeck({ rows, cols }) {
   );
 }
 
-// <EditForm button={selectedBtn} />
-// button has:
-// id
-// label
-// type (0,1,2) (Keybind, command, folder)
-// staticImgSrc
-// pressedImgSrc

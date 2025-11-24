@@ -81,38 +81,11 @@
       "type": 2,
       "child": [
         {
-          "id": 10,
-          "label": "Back",
-          "staticImgSrc": "/icons/back-static.png",
-          "pressedImgSrc": "/icons/back-pressed.png",
-          "command": "",
-          "type": 3,
-          "child": null
-        },
-        {
           "id": 11,
           "label": "Play",
           "staticImgSrc": "/icons/play-static.png",
           "pressedImgSrc": "/icons/play-pressed.png",
           "command": "media-play",
-          "type": 0,
-          "child": null
-        },
-        {
-          "id": 12,
-          "label": "Pause",
-          "staticImgSrc": "/icons/pause-static.png",
-          "pressedImgSrc": "/icons/pause-pressed.png",
-          "command": "media-pause",
-          "type": 0,
-          "child": null
-        },
-        {
-          "id": 13,
-          "label": "Next",
-          "staticImgSrc": "/icons/next-static.png",
-          "pressedImgSrc": "/icons/next-pressed.png",
-          "command": "media-next",
           "type": 0,
           "child": null
         }
