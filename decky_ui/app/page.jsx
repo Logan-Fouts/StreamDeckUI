@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <div className="bg-black">
       <main className="min-h-screen mx-auto w-auto my-auto">
-        <StreamDeck rows={3} cols={5} />
+        <StreamDeck rows={3} cols={4} />
       </main>
     </div>
   );

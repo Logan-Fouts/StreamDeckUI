@@ -7,7 +7,7 @@ import EditForm from "./EditForm.jsx";
 let KEYBIND = 0, COMMAND = 1, FOLDER = 2, BACK = 3;
 
 export default function StreamDeck({ rows, cols }) {
-  const [currBtns, setCurrBtns] = useState(loadButtonConfig);
+  const [currBtns, setCurrBtns] = useState(loadButtonConfig(rows*cols));
   const [prevBtns, setPrevBtns] = useState([]);
   const [parents, setParents] = useState([]);
   const [selectedBtn, setSelectedBtn] = useState(null);
