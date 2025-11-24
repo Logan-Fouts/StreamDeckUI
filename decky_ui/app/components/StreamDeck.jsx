@@ -9,15 +9,24 @@ let KEYBIND = 0, COMMAND = 1, FOLDER = 2, BACK = 3;
 export default function StreamDeck({ rows, cols }) {
   const [currBtns, setCurrBtns] = useState(loadButtonConfig);
   const [prevBtns, setPrevBtns] = useState([]);
+  const [parents, setParents] = useState([]);
   const [selectedBtn, setSelectedBtn] = useState(null);
   const [editFormOpen, setFormOpen] = useState(false);
+
+  const printStatus = () => {
+    console.log("\n\nSTATUS...")
+    if (parents.length > 0) console.log("Current Parent:", parents[parents.length - 1].label);
+    else console.log("Current Parent: root");
+
+    if (prevBtns.length > 0) console.log("PrevBtns Stack:", prevBtns);
+    else console.log("PrevBtns Stack: none");
+  }
 
   const updateButtons = (newBtns, backTrack) => {
     // Throw error too many buttons for specific device 
     if (newBtns.length > rows * cols) return null;
-    
+  
     if (backTrack == false) {
-      console.log("Bactracking")
       prevBtns.push(currBtns);
       setPrevBtns(prevBtns);
     }
@@ -29,6 +38,17 @@ export default function StreamDeck({ rows, cols }) {
     } else {
       setCurrBtns(newBtns);
     }
+
+    printStatus();
+  }
+
+  const handleFolderClick = (button) => {
+    parents.push(button);
+    setParents(parents);
+  }
+
+  const handleBackClick = () => {
+    parents.pop();
   }
 
   const handleSaveButton = () => {
@@ -53,7 +73,6 @@ export default function StreamDeck({ rows, cols }) {
   };
 
   const handleButtonClick = (btn) => {
-    console.log("Button Clicked", btn.label);
     setSelectedBtn(btn);
   }
 
@@ -66,7 +85,7 @@ export default function StreamDeck({ rows, cols }) {
       <div className={`grid grid-flow-row ${colsClasses[cols]} gap-4 justify-center`}>
         {currBtns.map((button, index) => (
           <div key={index}>
-            { button.type != BACK ? <BasicButton button={button} setSelectedBtn={setSelectedBtn} setCurrBtns={updateButtons}/> : <BackButton setCurrBtns={updateButtons} prevBtns={prevBtns} setSelectedBtn={setSelectedBtn} setPrevBtns={setPrevBtns}/> }
+            { button.type != BACK ? <BasicButton button={button} setSelectedBtn={setSelectedBtn} setCurrBtns={updateButtons} handleFolderClick={handleFolderClick} /> : <BackButton setCurrBtns={updateButtons} prevBtns={prevBtns} setSelectedBtn={setSelectedBtn} setPrevBtns={setPrevBtns} handleBackClick={handleBackClick}/> }
           </div>
         ))}
       </div>

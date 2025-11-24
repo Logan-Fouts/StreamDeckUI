@@ -40,31 +40,16 @@ const EditForm = ({ button, onSave, onCancel, isOpen }) => {
   if (!button) return null;
 
   return (
-    <div className="fixed text-black inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+    <div className="fixed text-white inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-zinc-950 rounded-lg shadow-xl w-full max-w-md">
         <div className="p-6">
           <h2 className="text-xl font-bold mb-4">Edit Button</h2>
           
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* ID Field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                ID
-              </label>
-              <input
-                type="text"
-                name="id"
-                value={formData.id}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                readOnly
-              />
-            </div>
-
             {/* Label Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Button Label *
+                Button Label
               </label>
               <input
                 type="text"
@@ -93,6 +78,22 @@ const EditForm = ({ button, onSave, onCancel, isOpen }) => {
                 <option value={2}>Folder</option>
               </select>
             </div>
+            { formData.type != 2 &&
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {formData.type == 0 ? <h1>Keybind</h1> : <h1>Command</h1>}
+                </label>
+                <input
+                  type="text"
+                  name="command"
+                  value={formData.command}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter button label"
+                />
+              </div>
+            }
 
             {/* Static Image Source */}
             <div>

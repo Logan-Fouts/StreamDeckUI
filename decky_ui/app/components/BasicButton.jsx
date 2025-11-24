@@ -1,15 +1,18 @@
+import { FaFolder } from 'react-icons/fa';
+
 let backTrack = false;
 
-export default function BasicButton({ button, setSelectedBtn, setCurrBtns }) {
+export default function BasicButton({ button, setSelectedBtn, setCurrBtns, handleFolderClick }) {
 
   const handleClick = () => {
     setSelectedBtn(button);
   }
 
   const handleDoubleClick = () => {
-    console.log("Button Double Clicked");
+    if (button.type != 2) return;
+
+    handleFolderClick(button);
     if (button.child) {
-      console.log(button.child);
       setCurrBtns(button.child, false);
       setSelectedBtn(null);
     } else {
@@ -19,6 +22,7 @@ export default function BasicButton({ button, setSelectedBtn, setCurrBtns }) {
   
   return (
     <button className="w-20 bg-blue-400 text-xs font-bold aspect-square text-center" onDoubleClick={() => handleDoubleClick()} onClick={() => handleClick()}>
+      {button.type === 2 ? <FaFolder size={24} className="mx-auto mt-2 mb-1" /> : null}
       <h1>{button.label}</h1>
     </button>
   );

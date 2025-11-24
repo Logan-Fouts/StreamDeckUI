@@ -1,7 +1,8 @@
-export default function BackButton({ setSelectedBtn, setCurrBtns, prevBtns, setPrevBtns }) {
+import { FaArrowLeft } from 'react-icons/fa';
+export default function BackButton({ setSelectedBtn, setCurrBtns, prevBtns, setPrevBtns, handleBackClick }) {
 
   const handleClick = () => {
-    console.log("Back Button Clicked");
+    handleBackClick();
     let tmpPrev = prevBtns.pop();
     setPrevBtns(prevBtns);
     setSelectedBtn(null);
@@ -10,7 +11,7 @@ export default function BackButton({ setSelectedBtn, setCurrBtns, prevBtns, setP
   
   return (
     <button className="w-20 bg-blue-400 text-xs font-bold aspect-square text-center" onClick={() => handleClick()}>
-      Back
+      <FaArrowLeft size={24} className="mx-auto mt-2 mb-1" />
     </button>
   );
 }
