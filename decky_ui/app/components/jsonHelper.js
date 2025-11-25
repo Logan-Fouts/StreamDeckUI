@@ -3,6 +3,7 @@ import data from './buttons.json';
 let BUTTONS = data.buttons;
 
 export default function loadButtonConfig(expectedNumButtons) {
+  return [];
   // If the loaded config has too many buttons, trim the excess
   if (BUTTONS.length > expectedNumButtons) {
     BUTTONS = BUTTONS.slice(0, expectedNumButtons);

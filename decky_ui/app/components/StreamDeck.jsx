@@ -1,5 +1,4 @@
-import react, { useState } from "react";
-import loadButtonConfig, { getValidID, saveConfig } from "./jsonHelper.js";
+import react, { useState, useEffect } from "react";
 import BasicButton from "./BasicButton.jsx";
 import BackButton from "./BackButton.jsx";
 import EditForm from "./EditForm.jsx";
@@ -7,7 +6,7 @@ import EditForm from "./EditForm.jsx";
 let KEYBIND = 0, COMMAND = 1, FOLDER = 2, BACK = 3;
 
 export default function StreamDeck({ rows, cols }) {
-  const [currBtns, setCurrBtns] = useState(loadButtonConfig(rows*cols));
+  const [currBtns, setCurrBtns] = useState([]);
   const [prevBtns, setPrevBtns] = useState([]);
   const [parents, setParents] = useState([]);
   const [selectedBtn, setSelectedBtn] = useState(null);
@@ -20,6 +19,52 @@ export default function StreamDeck({ rows, cols }) {
 
     if (prevBtns.length > 0) console.log("PrevBtns Stack:", prevBtns);
     else console.log("PrevBtns Stack: none");
+  }
+
+  const saveConfig = async (buttons) => {
+    let tmpBtns = [];
+    try {
+      console.log("Saving Config:", buttons);
+      tmpBtns = await window.electronAPI.readConfig();
+    } catch (error) {
+      console.error("Error loading button configuration:", error);
+    }
+
+    if (parents.length == 0) {
+      tmpBtns = currBtns;
+      await window.electronAPI.saveConfig(tmpBtns);
+      return;
+    }
+    
+    function findParent(tmpBtns) {
+      for (let i = 0; i < tmpBtns.length; i++) {
+        if (tmpBtns[i].id == parents[parents.length - 1].id) {
+          tmpBtns[i].child = currBtns;
+          return tmpBtns;
+        }
+        if (tmpBtns[i].child) findParent(tmpBtns[i].child);
+      }
+    }
+    tmpBtns = findParent(tmpBtns);
+    await window.electronAPI.saveConfig(tmpBtns);
+
+  }
+
+  const getValidID = async () => {
+    try {
+      const loadedButtons = await window.electronAPI.readConfig();
+    } catch (error) {
+      console.error("Error loading button configuration:", error);
+      return;
+    }
+    let highestID = -1;
+    function findHighID (buttons) {
+      for (let i = 0; i < buttons.length; i++) {
+        if (buttons[i].id > highestID) highestID = buttons[i].id;
+        if (buttons[i].chid) findHighID(buttons[i].child);
+      }
+    }
+    return highestID + 1;
   }
 
   const updateButtons = (newBtns, backTrack) => {
@@ -70,6 +115,19 @@ export default function StreamDeck({ rows, cols }) {
     setCurrBtns(newBtns);
     printStatus();
   }
+
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const loadedButtons = await window.electronAPI.readConfig();
+        console.log("Loaded buttons from config:", loadedButtons);
+        updateButtons(loadedButtons, true);
+      } catch (error) {
+        console.error("Error loading button configuration:", error);
+      }
+    }
+    loadConfig();
+  }, []);
 
   const handleFolderClick = (button) => {
     parents.push(button);
