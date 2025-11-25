@@ -109,15 +109,33 @@ export default function StreamDeck({ rows, cols }) {
   }
 
   return (
-    <div className="w-full max-w-lg aspect-video mx-auto border border-white px-8 pt-4 pb-8">
+    <div className={`w-full rounded-xl ${cols === 8 ? 'max-w-3xl' : cols === 5 ? 'max-w-lg' : 'max-w-xs'} aspect-video mx-auto border border-white px-8 pt-4 pb-8`}>
       <div className="flex items-center justify-center gap-4 mb-4">
         <h1>StreamDeck</h1>
-        <button className={`px-2 py-1 ${selectedBtn ? `bg-green-600` : `bg-gray-900`}`} onClick={() => setFormOpen(true)}>Edit</button>
+        <button className={`px-2 py-1 rounded-lg ${selectedBtn ? `bg-green-600` : `bg-gray-900`}`} onClick={() => {if (selectedBtn) setFormOpen(true)}}>Edit</button>
       </div>
       <div className={`grid grid-flow-row ${colsClasses[cols]} gap-4 justify-center`}>
         {currBtns.map((button, index) => (
           <div key={index}>
-            { button.type != BACK ? <BasicButton selectedBtn={selectedBtn} button={button} setSelectedBtn={setSelectedBtn} setCurrBtns={updateButtons} handleFolderClick={handleFolderClick} /> : <BackButton setCurrBtns={updateButtons} prevBtns={prevBtns} setSelectedBtn={setSelectedBtn} setPrevBtns={setPrevBtns} handleBackClick={handleBackClick}/> }
+            {editFormOpen ? null : (
+              button.type !== BACK ? (
+                <BasicButton 
+                  selectedBtn={selectedBtn} 
+                  button={button} 
+                  setSelectedBtn={setSelectedBtn} 
+                  setCurrBtns={updateButtons} 
+                  handleFolderClick={handleFolderClick} 
+                />
+              ) : (
+                <BackButton 
+                  setCurrBtns={updateButtons} 
+                  prevBtns={prevBtns} 
+                  setSelectedBtn={setSelectedBtn} 
+                  setPrevBtns={setPrevBtns} 
+                  handleBackClick={handleBackClick}
+                />
+              )
+            )}
           </div>
         ))}
       </div>

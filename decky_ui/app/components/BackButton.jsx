@@ -10,8 +10,36 @@ export default function BackButton({ setSelectedBtn, setCurrBtns, prevBtns, setP
   }
   
   return (
-    <button className="w-20 bg-blue-400 text-xs font-bold aspect-square text-center" onClick={() => handleClick()}>
-      <FaArrowLeft size={24} className="mx-auto mt-2 mb-1" />
+    <button 
+      className="
+        w-20 aspect-square
+        bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900
+        border border-slate-600
+        rounded-2xl
+        shadow-[0_8px_0_0_rgb(15,23,42)]
+        hover:translate-y-[4px]
+        hover:shadow-[0_4px_0_0_rgb(15,23,42)]
+        active:translate-y-[6px]
+        active:shadow-[0_2px_0_0_rgb(15,23,42)]
+        transition-all
+        duration-200
+        ease-[cubic-bezier(0.25,0.46,0.45,0.94)]
+        relative
+        overflow-hidden
+        group
+      " 
+      onClick={() => handleClick()}
+    >
+      {/* Modern gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/10 rounded-2xl" />
+      
+      {/* Subtle inner glow */}
+      <div className="absolute inset-0 rounded-2xl border border-white/10 pointer-events-none" />
+      
+      {/* Content with modern spacing */}
+      <div className="relative z-10 flex flex-col items-center justify-center h-full transform group-hover:scale-95 transition-transform duration-200">
+        <FaArrowLeft size={24} className="text-white drop-shadow-lg group-hover:scale-110 transition-transform duration-200" />
+      </div>
     </button>
   );
 }
