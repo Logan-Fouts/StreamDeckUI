@@ -22,52 +22,74 @@ export default function StreamDeck({ rows, cols }) {
   }
 
   const saveConfig = async (buttons) => {
-    let tmpBtns = [];
     try {
-      console.log("Saving Config:", buttons);
-      tmpBtns = await window.electronAPI.readConfig();
-    } catch (error) {
-      console.error("Error loading button configuration:", error);
-    }
+      let tmpBtns = await window.electronAPI.readConfig();
 
-    if (parents.length == 0) {
-      tmpBtns = currBtns;
-      await window.electronAPI.saveConfig(tmpBtns);
-      return;
-    }
-    
-    function findParent(tmpBtns) {
-      for (let i = 0; i < tmpBtns.length; i++) {
-        if (tmpBtns[i].id == parents[parents.length - 1].id) {
-          tmpBtns[i].child = currBtns;
-          return tmpBtns;
-        }
-        if (tmpBtns[i].child) findParent(tmpBtns[i].child);
+      // No parents, replace root level
+      if (parents.length === 0) {
+        await window.electronAPI.saveConfig(buttons);
+        return;
       }
-    }
-    tmpBtns = findParent(tmpBtns);
-    await window.electronAPI.saveConfig(tmpBtns);
 
+      const parentId = parents[parents.length - 1].id;
+
+      // Recurse to find and update parent
+      const updateParentChildren = (nodes) => {
+        for (const node of nodes) {
+          if (node.id === parentId) {
+            node.child = buttons;
+            return true;
+          }
+          if (node.child && updateParentChildren(node.child)) {
+            return true;
+          }
+        }
+        return false;
+      };
+
+      if (updateParentChildren(tmpBtns)) {
+        await window.electronAPI.saveConfig(tmpBtns);
+      } else {
+        console.error("Parent not found");
+      }
+    } catch (error) {
+      console.error("Error in saveConfig:", error);
+    }
   }
 
   const getValidID = async () => {
     try {
       const loadedButtons = await window.electronAPI.readConfig();
+      
+      const findHighID = (buttons) => {
+        let highestID = -1;
+        
+        const traverse = (items) => {
+          items.forEach(item => {
+            if (item.id > highestID) {
+              highestID = item.id;
+            }
+            if (item.child && item.child.length > 0) {
+              traverse(item.child);
+            }
+          });
+        };
+        
+        traverse(buttons);
+        return highestID;
+      };
+
+      const highestID = findHighID(loadedButtons);
+      console.log("Highest ID", highestID);
+      return highestID + 1;
+      
     } catch (error) {
       console.error("Error loading button configuration:", error);
-      return;
+      return 0; // Return a default ID instead of undefined
     }
-    let highestID = -1;
-    function findHighID (buttons) {
-      for (let i = 0; i < buttons.length; i++) {
-        if (buttons[i].id > highestID) highestID = buttons[i].id;
-        if (buttons[i].chid) findHighID(buttons[i].child);
-      }
-    }
-    return highestID + 1;
   }
 
-  const updateButtons = (newBtns, backTrack) => {
+  const updateButtons = async (newBtns, backTrack) => {
     // Throw error too many buttons for specific device 
     if (newBtns.length > rows * cols) return null;
   
@@ -80,7 +102,7 @@ export default function StreamDeck({ rows, cols }) {
     
     // No buttons on page
     if (newBtns.length == 0) {
-      const validID = getValidID();
+      const validID = await getValidID();
       const tmpBtns = Array(rows*cols).fill().map((_, i) => ({ id: i + validID, label: '', type: 0 }));
       tmpBtns[0].type = BACK;
       setCurrBtns(tmpBtns);
@@ -91,7 +113,7 @@ export default function StreamDeck({ rows, cols }) {
 
     // Too few buttons and no back button doesnt handle if all buttons already exist
     if (tooFewBtns && newBtns[0].id != BACK) {
-      const validID = getValidID();
+      const validID = await getValidID();
       const tmpBtns = Array(rows*cols).fill().map((_, i) => ({ id: i + validID, label: '', type: 0 }));
       tmpBtns[0].type = BACK;
       for (let i = 1; i < newBtns.length; i++) tmpBtns[i] = newBtns[i];
@@ -103,7 +125,7 @@ export default function StreamDeck({ rows, cols }) {
 
     // Too few buttons but back button already exists
     if (tooFewBtns && newBtns[0].id == BACK) {
-      const validID = getValidID();
+      const validID = await getValidID();
       const tmpBtns = Array(rows*cols).fill().map((_, i) => ({ id: i + validID, label: '', type: 0 }));
       for (let i = 0; i < newBtns.length; i++) tmpBtns[i] = newBtns[i];
       setCurrBtns(tmpBtns);
@@ -116,16 +138,16 @@ export default function StreamDeck({ rows, cols }) {
     printStatus();
   }
 
-  useEffect(() => {
-    const loadConfig = async () => {
-      try {
-        const loadedButtons = await window.electronAPI.readConfig();
-        console.log("Loaded buttons from config:", loadedButtons);
-        updateButtons(loadedButtons, true);
-      } catch (error) {
-        console.error("Error loading button configuration:", error);
-      }
+  const loadConfig = async () => {
+    try {
+      const loadedButtons = await window.electronAPI.readConfig();
+      updateButtons(loadedButtons, true);
+    } catch (error) {
+      console.error("Error loading button configuration:", error);
     }
+  }
+
+  useEffect(() => {
     loadConfig();
   }, []);
 
@@ -138,12 +160,18 @@ export default function StreamDeck({ rows, cols }) {
     parents.pop();
   }
 
-  const handleSaveButton = (formData) => {
-    let updatedBtns = currBtns.map(btn => btn.id === formData.id ? { ...btn, ...formData } : btn);
-    setCurrBtns(updatedBtns);
-    setSelectedBtn(null);
-    saveConfig(updatedBtns, parents);
+  const handleSaveButton = async (formData) => {
+    const cleanedFormData = {
+      ...formData,
+      ...(formData.type !== 2 && { child: null })
+    };
+    
+    let updatedBtns = currBtns.map(btn => btn.id === cleanedFormData.id ? { ...btn, ...cleanedFormData } : btn);
+    console.log("Updated Buttons:", updatedBtns);
     setFormOpen(false);
+    setSelectedBtn(null);
+    updateButtons(updatedBtns, true);
+    saveConfig(updatedBtns, parents);
   }
 
   const handleCancelEdit = () => {

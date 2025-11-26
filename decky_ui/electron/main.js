@@ -46,8 +46,8 @@ ipcMain.handle("read-config", async (event) => {
   const configPath = path.join(__dirname, '..', 'buttons.json');
 
   try {
-    const data = require(configPath);
-    return data.buttons;
+    const data = await fs.readFile(configPath, 'utf8');
+    return JSON.parse(data).buttons;
   } catch (error) {
     console.error("Error reading config file:", error);
     return null;

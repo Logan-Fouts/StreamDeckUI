@@ -29,7 +29,7 @@
     },
     {
       "id": 4,
-      "label": "Undo",
+      "label": "Undoo",
       "staticImgSrc": "/icons/undo-static.png",
       "pressedImgSrc": "/icons/undo-pressed.png",
       "command": "Ctrl+Z",
